@@ -1,0 +1,8 @@
+# Konfigurasi ruff (linter). Dijalankan di CI: ruff check .
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# E/F = error dasar dan kode yang tidak dipakai, I = urutan import
+select = ["E", "F", "I"]
+

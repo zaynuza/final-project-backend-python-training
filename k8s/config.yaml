@@ -1,0 +1,26 @@
+# Config Order API untuk Kubernetes.
+# ConfigMap = setting biasa. Secret = nilai rahasia.
+# Secret di bawah hanya untuk cluster latihan. Di cluster asli, buat Secret dari luar repository:
+#   kubectl create secret generic order-api-secret --from-literal=JWT_SECRET=... --from-literal=DATABASE_URL=...
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: order-api-config
+data:
+  ENV: production
+  LOG_LEVEL: INFO
+  TRACING_ENABLED: "0"                     # tidak ada Jaeger di cluster latihan
+  REDIS_URL: redis://redis:6379/2
+  CELERY_BROKER_URL: redis://redis:6379/0
+  CELERY_RESULT_BACKEND: redis://redis:6379/1
+  CORS_ORIGINS: https://toko.example.com
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: order-api-secret
+type: Opaque
+stringData:
+  JWT_SECRET: latihan-ganti-dengan-secret-asli-minimal-32-karakter
+  DATABASE_URL: postgresql+psycopg://app:app@postgres:5432/orders
+  RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/

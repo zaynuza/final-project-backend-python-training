@@ -1,0 +1,122 @@
+# CI/CD Order API.
+#   pull request : lint -> test -> build-scan
+#   main         : + deploy ke cluster Kubernetes demo (kind di runner GitHub) -> smoke test
+# Taruh file ini di root repository project: .github/workflows/ci.yml
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    # PostgreSQL asli untuk tests/test_concurrency.py (race condition tidak bisa diuji di SQLite)
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: orders_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d orders_test"
+          --health-interval 2s
+          --health-retries 15
+    env:
+      TEST_POSTGRES_URL: postgresql+psycopg://app:app@localhost:5432/orders_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      # test biasa memakai SQLite dan fakeredis. test_concurrency memakai PostgreSQL di atas
+      - run: pytest -q
+
+  build-scan:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t order-api:${{ github.sha }} .
+      - name: Scan image (Trivy)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: order-api:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+  deploy-smoke:
+    needs: build-scan
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      SMOKE_EMAIL: smoke@toko.com
+      SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install httpx
+      - run: docker build -t order-api:1.0 .
+      # cluster demo: Kubernetes di dalam runner, hilang setelah job selesai
+      - uses: helm/kind-action@v1
+        with:
+          cluster_name: demo
+      - run: kind load docker-image order-api:1.0 --name demo
+      - name: Deploy
+        run: |
+          kubectl apply -f k8s/
+          kubectl rollout status deploy/postgres deploy/redis deploy/rabbitmq --timeout=180s
+          kubectl rollout status deploy/order-api --timeout=180s
+      - name: Buat user smoke test
+        run: |
+          kubectl exec deploy/order-api -- env NEW_USER_PASSWORD="$SMOKE_PASSWORD" \
+            python create_user.py "$SMOKE_EMAIL" --role admin
+      - name: Smoke test
+        run: |
+          kubectl port-forward svc/order-api 8080:80 &
+          sleep 3
+          BASE_URL=http://localhost:8080 python smoke_test.py
+      - name: Log jika gagal
+        if: failure()
+        run: kubectl get pods && kubectl logs deploy/order-api --tail=50
+
+  publish:
+    needs: deploy-smoke
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/order-api:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/order-api:latest

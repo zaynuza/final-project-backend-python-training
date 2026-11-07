@@ -1,0 +1,125 @@
+# Worker Celery, consumer notifikasi, dan consumer poin: image yang sama dengan API, perintah yang berbeda.
+# Tidak punya Service, karena tidak menerima request HTTP.
+# Semua punya resources (requests/limits). Consumer punya liveness probe ke /metrics-nya sendiri
+# (prometheus_client start_http_server), worker Celery lewat `celery inspect ping`.
+# replicas: 1. Aman dinaikkan: consumer idempotent (event_id) dan poin ditambah atomic di database.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-worker
+  template:
+    metadata:
+      labels:
+        app: order-worker
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: worker
+          image: order-api:1.0
+          imagePullPolicy: IfNotPresent
+          command: ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=info"]
+          envFrom:
+            - configMapRef:
+                name: order-api-config
+            - secretRef:
+                name: order-api-secret
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "celery -A app.worker.celery_app inspect ping -d celery@$HOSTNAME"]
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            timeoutSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-consumer
+  template:
+    metadata:
+      labels:
+        app: order-consumer
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: consumer
+          image: order-api:1.0
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "app.consumers.notification_consumer"]
+          envFrom:
+            - configMapRef:
+                name: order-api-config
+            - secretRef:
+                name: order-api-secret
+          ports:
+            - containerPort: 8001
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: points-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: points-consumer
+  template:
+    metadata:
+      labels:
+        app: points-consumer
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: points-consumer
+          image: order-api:1.0
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "app.consumers.points_consumer"]
+          envFrom:
+            - configMapRef:
+                name: order-api-config
+            - secretRef:
+                name: order-api-secret
+          ports:
+            - containerPort: 8002
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 8002
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi

@@ -1,0 +1,23 @@
+# Rahasia: JANGAN pernah di-commit. Yang boleh hanya .env.example (berisi placeholder)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Tool
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Database lokal dan editor
+*.db
+*.sqlite3
+.idea/
+.vscode/
+.DS_Store

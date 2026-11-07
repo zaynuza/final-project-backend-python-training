@@ -1,0 +1,57 @@
+# Deployment + Service untuk API.
+# Probe memakai endpoint health check Sesi 9. Container berjalan sebagai user biasa (uid 10001).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-api
+  template:
+    metadata:
+      labels:
+        app: order-api
+    spec:
+      securityContext:
+        runAsNonRoot: true                 # pod ditolak jika image berjalan sebagai root
+      containers:
+        - name: api
+          image: order-api:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: order-api-config
+            - secretRef:
+                name: order-api-secret
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8000
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8000
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-api
+spec:
+  selector:
+    app: order-api
+  ports:
+    - port: 80
+      targetPort: 8000

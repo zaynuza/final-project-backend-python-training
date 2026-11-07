@@ -1,0 +1,18 @@
+flowchart LR
+    client[Client / Frontend] -->|HTTPS + JWT| api[API FastAPI]
+    api -->|SQL| pg[(PostgreSQL)]
+    api -->|cache, rate limit| redis[(Redis)]
+    api -->|task report| redis
+    worker[Worker Celery] -->|ambil task| redis
+    worker -->|SQL| pg
+    api -->|event order.*| mq[[RabbitMQ]]
+    mq -->|order.*| consumer[Consumer notifikasi]
+    mq -->|order.paid| points[Consumer poin loyalty]
+    consumer -->|catat event_id| pg
+    points -->|point_events + customer_points| pg
+    api -. trace .-> jaeger[Jaeger]
+    consumer -. trace .-> jaeger
+    points -. trace .-> jaeger
+    prom[Prometheus] -. scrape /metrics .-> api
+    prom -. scrape /metrics .-> consumer
+    prom -. scrape /metrics .-> points

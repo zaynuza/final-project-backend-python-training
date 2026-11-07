@@ -1,0 +1,6 @@
+# Dependency untuk development dan CI saja (TIDAK masuk image Docker)
+-r requirements.txt
+pytest>=8
+httpx>=0.27
+fakeredis>=2.20
+ruff>=0.6

@@ -1,0 +1,99 @@
+# Order API lengkap dalam container: API, worker Celery, consumer notifikasi, dan semua dependency-nya.
+# Jalankan dari folder ini:
+#   cp .env.example .env            (isi JWT_SECRET)
+#   docker compose up -d --build
+#   docker compose exec api python create_user.py admin@toko.com --role admin
+# API: http://localhost:8000/docs   RabbitMQ: http://localhost:15672   Jaeger: http://localhost:16686
+# Prometheus: http://localhost:9090 (alert di /alerts)
+
+# Setting yang sama untuk api, worker, dan consumer. Host = nama service di network compose.
+x-app: &app
+  image: order-api:local
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql+psycopg://app:app@postgres:5432/orders
+    REDIS_URL: redis://redis:6379/2
+    CELERY_BROKER_URL: redis://redis:6379/0
+    CELERY_RESULT_BACKEND: redis://redis:6379/1
+    RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    rabbitmq:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  api:
+    <<: *app
+    build: .
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
+      interval: 5s
+      retries: 10
+
+  worker:
+    <<: *app
+    command: ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=info"]
+
+  consumer:
+    <<: *app
+    command: ["python", "-m", "app.consumers.notification_consumer"]
+
+  points-consumer:
+    <<: *app
+    command: ["python", "-m", "app.consumers.points_consumer"]
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "127.0.0.1:5433:5432"                    # dari laptop: localhost:5433 (hanya laptop sendiri, bukan jaringan)
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: orders
+    volumes:
+      - pgdata:/var/lib/postgresql/data          # data tetap ada walaupun container dibuat ulang
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "app", "-d", "orders"]
+      interval: 2s
+      retries: 15
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 15
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      retries: 20
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    ports:
+      - "16686:16686"
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    ports:
+      - "9090:9090"                              # UI: http://localhost:9090
+    volumes:
+      - ./prometheus:/etc/prometheus:ro          # prometheus.yml dan alerts.yml
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  pgdata:
