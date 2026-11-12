@@ -1,10 +1,10 @@
 """Infrastructure: pembatas login gagal per email dengan Redis (adapter untuk port LoginAttemptLimiter).
 
 Setiap login gagal menaikkan counter `login-fail:<email>` (INCR). Counter kedaluwarsa sendiri setelah
-`block_seconds` sejak gagal PERTAMA (EXPIRE NX), jadi tidak ada yang perlu dibersihkan manual.
+`block_seconds` sejak gagal pertama (EXPIRE NX), jadi tidak ada yang perlu dibersihkan manual.
 Counter >= max_attempts berarti diblokir sampai counter kedaluwarsa. Login berhasil menghapus counter.
 
-Log berisi email dan jumlah gagal, TIDAK PERNAH password. Metric: login_failures_total, login_blocked_total.
+Log berisi email dan jumlah gagal, tidak pernah password. Metric: login_failures_total, login_blocked_total.
 
 Catatan desain:
 - Dihitung per email, bukan per IP: penyerang yang memakai banyak IP tetap kena batas.

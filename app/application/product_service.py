@@ -4,7 +4,7 @@ Baca produk memakai cache-aside: cek cache dulu, kalau tidak ada baru ke databas
 Cache dihapus (invalidation) oleh Unit of Work setiap ada produk yang berubah, setelah commit.
 Produk terlaris di-cache sebagai top 10, lalu dipotong sesuai limit, jadi cukup satu cache key.
 
-Cache stampede: saat cache kosong, hanya SATU request yang mengambil lock lalu query database dan mengisi cache.
+Cache stampede: saat cache kosong, hanya satu request yang mengambil lock lalu query database dan mengisi cache.
 Request lain menunggu sebentar lalu membaca hasilnya dari cache, jadi database tidak diserbu banyak query kembar.
 """
 import time

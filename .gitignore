@@ -1,4 +1,4 @@
-# Rahasia: JANGAN pernah di-commit. Yang boleh hanya .env.example (berisi placeholder)
+# Rahasia: jangan pernah di-commit. Yang boleh hanya .env.example (berisi placeholder)
 .env
 .env.*
 !.env.example

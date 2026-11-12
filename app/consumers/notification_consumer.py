@@ -12,7 +12,7 @@ Observability:
 - Setiap hasil dihitung di metric notifications_processed_total, dibuka di port CONSUMER_METRICS_PORT
 - Log JSON membawa event_id dan trace_id
 
-Jalankan dari folder starter/:
+Jalankan dari folder final-project/:
     python -m app.consumers.notification_consumer
 """
 import json

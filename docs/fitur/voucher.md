@@ -35,7 +35,7 @@ Setiap voucher punya kuota. Kuota berkurang saat dipakai dan kembali saat order 
 | domain | `voucher.py`, `order.py`, `errors.py` | Entity `Voucher` (`redeem()`, `restore()`), `Order.apply_voucher()`, error domain |
 | application | `voucher_service.py`, `order_service.py`, `ports.py`, `errors.py` | Use case buat/lihat voucher, pakai & kembalikan kuota di dalam Unit of Work |
 | infrastructure | `models.py`, `repositories.py`, `unit_of_work.py` | Tabel `vouchers`, kolom `orders.voucher_code`, `SqlAlchemyVoucherRepository` |
-| api | `routers/vouchers.py`, `routers/orders.py`, `schemas.py`, `errors.py`, `dependencies.py` | Endpoint, proteksi RBAC `products:write`, schema ketat, pemetaan error |
+| api | `routers/vouchers.py`, `routers/orders.py`, `schemas.py`, `errors.py`, `dependencies.py` | Endpoint, cek scope `products:write`, schema ketat, pemetaan error |
 
 ## Keputusan teknis
 
@@ -50,4 +50,4 @@ pytest tests/test_voucher.py -q
 python demo_concurrency.py     # 8 order bersamaan, voucher kuota 1: tepat 1 yang berhasil (API harus hidup)
 ```
 
-Yang dites: kuota berkurang sampai habis, potongan tidak membuat total negatif, kuota kembali saat order dibatalkan, kuota tidak terpakai saat stok kurang (rollback transaksi), format error, dan proteksi RBAC admin.
+Yang dites: kuota berkurang sampai habis, potongan tidak membuat total negatif, kuota kembali saat order dibatalkan, kuota tidak terpakai saat stok kurang (rollback transaksi), format error, dan cek akses admin.

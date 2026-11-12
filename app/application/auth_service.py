@@ -50,7 +50,7 @@ class AuthService:
     def login(self, email: str, password: str) -> str:
         if self.limiter:
             wait = self.limiter.retry_after(email)
-            if wait:                                          # ditolak SEBELUM password dicek, walau password benar
+            if wait:                                          # ditolak sebelum password dicek, walau password benar
                 raise TooManyLoginAttempts(wait)
         with self.uow:
             user = self.uow.users.get_by_email(email)

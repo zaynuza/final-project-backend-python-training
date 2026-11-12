@@ -1,4 +1,4 @@
-"""Smoke test Order API: dijalankan ke aplikasi yang BARU di-deploy, setelah deploy selesai.
+"""Smoke test Order API: dijalankan ke aplikasi yang baru di-deploy, setelah deploy selesai.
 
 Yang dicek adalah hasil deploy (config, koneksi ke dependency, login), dengan request sungguhan.
 Butuh user khusus smoke test (role admin) yang dibuat sekali di setiap environment:

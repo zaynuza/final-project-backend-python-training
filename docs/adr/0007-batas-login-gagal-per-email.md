@@ -13,7 +13,7 @@ dan endpoint login tidak memakainya.
 
 - Login gagal dihitung per email di Redis: `INCR login-fail:<email>` dengan `EXPIRE ... NX` (15 menit sejak gagal pertama)
 - Gagal ke-5 (`LOGIN_MAX_ATTEMPTS`): login berikutnya dijawab `429 too_many_login_attempts` + `Retry-After`,
-  walaupun password benar. Pengecekan dilakukan SEBELUM password diperiksa
+  walaupun password benar. Pengecekan dilakukan sebelum password diperiksa
 - Login berhasil menghapus counter. Email yang tidak terdaftar ikut dihitung, supaya penyerang tidak bisa membedakan
   email terdaftar dan tidak dari perilaku sistem. Email dinormalkan ke huruf kecil
 - Port `LoginAttemptLimiter` ada di application, adapter `RedisLoginAttemptLimiter` di infrastructure.

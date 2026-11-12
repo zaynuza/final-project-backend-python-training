@@ -24,7 +24,7 @@ Repository punya method `get_for_update()` (SQLAlchemy: `session.get(..., with_f
 `SELECT ... FOR UPDATE`). Baris dikunci sampai transaksi selesai, jadi request kedua menunggu lalu membaca nilai
 yang sudah terbaru. Dipakai oleh `place_order`, `pay_order`, dan `cancel_order`.
 
-Urutan kunci SELALU sama: **order -> produk (urut id) -> voucher**. Urutan yang sama di semua use case mencegah
+Urutan kunci selalu sama: **order -> produk (urut id) -> voucher**. Urutan yang sama di semua use case mencegah
 *deadlock* (dua transaksi saling menunggu kunci yang dipegang yang lain).
 
 ## Konsekuensi

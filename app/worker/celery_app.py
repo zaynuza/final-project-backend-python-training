@@ -2,7 +2,7 @@
 
 Broker (queue job) dan result backend (status & hasil job) memakai Redis.
 
-Jalankan worker dari folder starter/:
+Jalankan worker dari folder final-project/:
     celery -A app.worker.celery_app worker --loglevel=info --pool=solo
 """
 from celery import Celery

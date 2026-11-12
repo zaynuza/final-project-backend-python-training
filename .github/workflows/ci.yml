@@ -1,7 +1,6 @@
 # CI/CD Order API.
 #   pull request : lint -> test -> build-scan
-#   main         : + deploy ke cluster Kubernetes demo (kind di runner GitHub) -> smoke test
-# Taruh file ini di root repository project: .github/workflows/ci.yml
+#   main         : + deploy ke cluster Kubernetes demo (kind di runner GitHub) -> smoke test -> publish image
 name: CI
 
 on:

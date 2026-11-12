@@ -1,4 +1,3 @@
-<!-- Disimpan di .github/pull_request_template.md, GitHub mengisi deskripsi pull request baru dengan template ini -->
 ## Apa yang berubah
 <!-- Satu atau dua kalimat. Sertakan nomor issue jika ada. -->
 

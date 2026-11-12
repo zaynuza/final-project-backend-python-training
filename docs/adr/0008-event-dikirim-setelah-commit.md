@@ -8,8 +8,8 @@ Status: Diterima (dengan risiko yang diketahui)
 Order tersimpan di PostgreSQL, lalu event `order.*` dikirim ke RabbitMQ. Dua penyimpanan berbeda tidak bisa
 di-commit bersamaan (*dual write*). Pilihan urutannya:
 
-- Kirim event SEBELUM commit: bisa terkirim event untuk order yang akhirnya rollback (notifikasi untuk order yang tidak ada)
-- Kirim event SETELAH commit: kalau RabbitMQ gagal tepat setelah commit, order ada tetapi event hilang
+- Kirim event sebelum commit: bisa terkirim event untuk order yang akhirnya rollback (notifikasi untuk order yang tidak ada)
+- Kirim event setelah commit: kalau RabbitMQ gagal tepat setelah commit, order ada tetapi event hilang
 
 ## Keputusan
 

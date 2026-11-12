@@ -1,8 +1,8 @@
-"""Data contoh untuk demo: 3 produk. Dijalankan SEKALI setelah user admin dibuat (idempotent: tidak menambah dua kali).
+"""Data contoh untuk demo: 3 produk. Dijalankan sekali setelah user admin dibuat (idempotent: tidak menambah dua kali).
 
 Jalankan (API harus sudah hidup):
     BASE_URL=http://localhost:8000 SMOKE_EMAIL=admin@toko.com SMOKE_PASSWORD=... python demo_data.py
-Voucher sengaja TIDAK dibuat di sini: membuat voucher adalah bagian dari demo fitur.
+Voucher sengaja tidak dibuat di sini: membuat voucher adalah bagian dari demo fitur.
 """
 import os
 

@@ -4,7 +4,7 @@ Satu `with uow:` = satu session = satu transaksi.
 Semua repository di dalamnya memakai session yang sama.
 
 Setelah commit berhasil, cache produk yang berubah dihapus (invalidation).
-Dihapus SETELAH commit, supaya tidak ada request lain yang mengisi cache dengan data yang belum tersimpan.
+Dihapus setelah commit, supaya tidak ada request lain yang mengisi cache dengan data yang belum tersimpan.
 Cache produk terlaris ikut dihapus setiap ada status order yang berubah (misalnya order dibayar).
 """
 from sqlalchemy.orm import sessionmaker

@@ -1,7 +1,7 @@
-"""Test race condition di PostgreSQL SUNGGUHAN (SQLite tidak bisa: database-nya dikunci utuh saat menulis).
+"""Test race condition di PostgreSQL sungguhan (SQLite tidak bisa: database-nya dikunci utuh saat menulis).
 
 Test ini dilewati kalau TEST_POSTGRES_URL tidak di-set, jadi `pytest -q` biasa tetap cepat dan tanpa dependency.
-Nama database WAJIB berakhiran _test, karena tabelnya dihapus dan dibuat ulang di setiap test.
+Nama database wajib berakhiran _test, karena tabelnya dihapus dan dibuat ulang di setiap test.
 
     docker compose up -d postgres
     docker compose exec postgres createdb -U app orders_test
@@ -9,7 +9,7 @@ Nama database WAJIB berakhiran _test, karena tabelnya dihapus dan dibuat ulang d
 
 Cara kerja: 8 thread (= 8 request bersamaan), masing-masing punya Unit of Work sendiri.
 Langkah di domain sengaja dibuat lambat (sleep) tepat setelah data dibaca, supaya semua thread sempat membaca
-nilai LAMA sebelum ada yang menulis. Tanpa row lock, hasilnya salah. Dengan row lock, request bergantian.
+nilai lama sebelum ada yang menulis. Tanpa row lock, hasilnya salah. Dengan row lock, request bergantian.
 """
 import os
 import threading

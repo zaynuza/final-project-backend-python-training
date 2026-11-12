@@ -8,7 +8,7 @@ Tanpa row lock, beberapa request bisa sama-sama membaca kuota 1, jadi lebih dari
 Jalankan (API harus sudah hidup, user admin sudah dibuat):
     BASE_URL=http://localhost:8000 SMOKE_EMAIL=admin@toko.com SMOKE_PASSWORD=... python demo_concurrency.py
 REQUESTS=8 (default) = jumlah request bersamaan. Semua request order berasal dari satu IP, jadi dihitung rate limit
-(default 20 per menit): jalankan demo ini SEBELUM demo rate limit, atau tunggu semenit.
+(default 20 per menit): jalankan demo ini sebelum demo rate limit, atau tunggu semenit.
 Exit code 1 kalau hasilnya salah.
 """
 import os

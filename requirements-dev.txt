@@ -1,4 +1,4 @@
-# Dependency untuk development dan CI saja (TIDAK masuk image Docker)
+# Dependency untuk development dan CI saja (tidak masuk image Docker)
 -r requirements.txt
 pytest>=8
 httpx>=0.27

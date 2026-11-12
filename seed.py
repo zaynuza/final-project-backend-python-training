@@ -1,6 +1,6 @@
 """Isi database aplikasi (PostgreSQL) dengan data yang cukup banyak untuk profiling.
 
-PERHATIAN: semua tabel aplikasi dihapus lalu dibuat ulang dari model (user, produk, voucher, order ikut hilang).
+Perhatian: semua tabel aplikasi dihapus lalu dibuat ulang dari model (user, produk, voucher, order ikut hilang).
 Jangan jalankan di database yang dipakai demo. Pakai database terpisah, misalnya orders_perf:
     docker compose exec postgres createdb -U app orders_perf
     docker compose exec -e DATABASE_URL=postgresql+psycopg://app:app@postgres:5432/orders_perf api python seed.py

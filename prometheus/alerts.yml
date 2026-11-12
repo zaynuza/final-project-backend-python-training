@@ -38,7 +38,7 @@ groups:
   - name: order-events
     rules:
       - alert: EventPublishFailed
-        # Event dikirim SETELAH commit. Kalau RabbitMQ gagal, order tersimpan tapi event hilang (ADR 0003 dan 0006).
+        # Event dikirim setelah commit. Kalau RabbitMQ gagal, order tersimpan tapi event hilang (ADR 0008).
         expr: increase(events_published_total{result="failed"}[5m]) > 0
         labels:
           severity: page

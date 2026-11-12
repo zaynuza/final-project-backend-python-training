@@ -1,19 +1,19 @@
 # Order API - Final Project
 
-API toko online siap produksi: produk, katalog produk terlaris (*best-sellers*), order dengan diskon per tipe customer dan voucher kuota, pembayaran, poin loyalty otomatis berbasis event, report penjualan di background, serta notifikasi ke customer.
+API toko online: produk, produk terlaris, order dengan diskon per tipe customer dan voucher berkuota, pembayaran, poin loyalty dari event, report penjualan di background, dan notifikasi ke customer.
 
 ## Fitur
 
-- **Produk & Stok:** CRUD produk dengan cache-aside di Redis dan invalidation otomatis setelah commit
-- **Order & Diskon:** aggregate `Order` dengan `DiscountPolicy` (regular/member/vip), keyset pagination, tanpa N+1 query (`selectinload`)
-- **[Voucher Diskon](docs/fitur/voucher.md):** potongan harga dengan kuota yang terikat dalam satu transaksi Unit of Work bersama stok produk
-- **[Produk Terlaris](docs/fitur/best-sellers.md):** `GET /products/best-sellers` dengan query agregasi SQL, cache-aside (`X-Cache: HIT/MISS`), invalidation saat order dibayar, dan rate limiting
-- **[Poin Loyalty](docs/fitur/poin-loyalty.md):** consumer RabbitMQ pada event `order.paid` yang menambah 1 poin per Rp10.000 secara idempotent, dilengkapi endpoint `GET /customers/{customer}/points`
-- **Background Report:** pembuatan laporan penjualan asynchronous lewat worker Celery (`POST /reports/sales`)
-- **Concurrency:** stok, kuota voucher, dan status order dikunci dengan `SELECT ... FOR UPDATE` (urutan kunci tetap, anti-deadlock), poin loyalty ditambah atomic. Dibuktikan di PostgreSQL asli lewat `tests/test_concurrency.py`
-- **Cache:** cache-aside dengan TTL + jitter, invalidation setelah commit, dan lock anti-stampede (`SET NX EX`)
-- **Observability:** log JSON dengan `request_id` & `trace_id`, Prometheus `/metrics` untuk API dan kedua consumer, alert SLO (`prometheus/alerts.yml`), readiness/liveness check, distributed tracing OpenTelemetry + Jaeger
-- **[Security](docs/fitur/login-limit.md):** OAuth2 password flow + JWT, hash Argon2, RBAC per scope, cek pemilik data (order orang lain = 404), batas login gagal per email (429 + `Retry-After`), schema ketat, secret dari environment
+- Produk dan stok. Data produk di-cache di Redis (cache-aside) dan cache-nya dihapus setelah commit
+- Order dengan diskon per tipe customer (regular, member, vip) lewat `DiscountPolicy`. Riwayat order memakai keyset pagination dan `selectinload`, jadi tidak ada N+1 query
+- [Voucher](docs/fitur/voucher.md) berkuota. Kuota dikurangi dalam transaksi yang sama dengan stok produk
+- [Produk terlaris](docs/fitur/best-sellers.md) di `GET /products/best-sellers`: dihitung dengan `GROUP BY` di database, di-cache (`X-Cache: HIT/MISS`), cache dihapus saat ada order dibayar, dan dibatasi rate limit
+- [Poin loyalty](docs/fitur/poin-loyalty.md): consumer RabbitMQ untuk event `order.paid`, 1 poin per Rp10.000, idempotent. Saldo bisa dilihat di `GET /customers/{customer}/points`
+- Report penjualan dibuat worker Celery di background (`POST /reports/sales`)
+- Stok, kuota voucher, dan status order dikunci dengan `SELECT ... FOR UPDATE` dengan urutan kunci tetap supaya tidak deadlock. Diuji di PostgreSQL lewat `tests/test_concurrency.py`
+- Cache dengan TTL + jitter dan lock anti-stampede (`SET NX EX`)
+- Observability: log JSON dengan `request_id` dan `trace_id`, `/metrics` Prometheus untuk API dan kedua consumer, alert SLO (`prometheus/alerts.yml`), readiness/liveness check, dan tracing OpenTelemetry + Jaeger
+- Keamanan: login OAuth2 password flow + JWT, hash Argon2, RBAC per scope, order milik orang lain dijawab 404, [batas login gagal per email](docs/fitur/login-limit.md) (429 + `Retry-After`), schema ketat, dan secret dari environment
 
 ## Arsitektur & Keputusan Teknis
 
@@ -82,4 +82,4 @@ BASE_URL=http://localhost:8000 SMOKE_EMAIL=smoke@toko.com SMOKE_PASSWORD=... pyt
 
 ## Deploy
 
-Setiap pull request menjalankan lint (`ruff`), unit & integration test (`pytest`), build multi-stage Docker image, scan kerentanan Trivy, deploy ke cluster Kubernetes (`k8s/`), dan menjalankan `smoke_test.py`.
+Pipeline ada di `.github/workflows/ci.yml`. Setiap pull request menjalankan lint (`ruff`), test (`pytest`), build image Docker multi-stage, dan scan kerentanan Trivy. Push ke `main` juga men-deploy manifest `k8s/` ke cluster kind di runner GitHub, menjalankan `smoke_test.py`, lalu mem-publish image ke ghcr.io.

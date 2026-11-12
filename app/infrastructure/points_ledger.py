@@ -1,6 +1,6 @@
 """Infrastructure: buku poin customer di database, adapter untuk port PointsLedger.
 
-add() mencatat event_id dan menambah poin dalam SATU transaksi.
+add() mencatat event_id dan menambah poin dalam satu transaksi.
 event_id adalah primary key di tabel point_events, jadi event yang sama tidak bisa tercatat dua kali.
 
 Dua consumer bisa memproses event customer yang sama bersamaan, jadi:

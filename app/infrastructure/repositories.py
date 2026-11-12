@@ -1,6 +1,6 @@
 """Infrastructure: adapter SQLAlchemy untuk port repository.
 
-Repository menerjemahkan domain model <-> ORM model, dan TIDAK pernah commit.
+Repository menerjemahkan domain model <-> ORM model, dan tidak pernah commit.
 Commit adalah keputusan Unit of Work.
 Product repository mencatat id produk yang berubah, supaya Unit of Work bisa menghapus cache-nya.
 

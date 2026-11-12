@@ -3,7 +3,7 @@
 Password ditanyakan lewat getpass (tidak tampil di layar dan tidak tersimpan di history terminal).
 Untuk script otomatis, password bisa dikirim lewat environment variable NEW_USER_PASSWORD.
 
-Jalankan dari folder starter/:
+Jalankan dari folder final-project/:
     python create_user.py admin@toko.com --role admin
     python create_user.py budi@mail.com --type vip
 """

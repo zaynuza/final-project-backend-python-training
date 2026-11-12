@@ -9,7 +9,7 @@ Kalau satu langkah gagal, semua langkah dibatalkan (rollback).
 Dua request bersamaan: baris yang akan diubah dikunci dulu (SELECT ... FOR UPDATE), jadi request kedua menunggu
 request pertama selesai lalu membaca nilai yang sudah terbaru. Tanpa itu, kuota voucher 1 bisa terpakai dua kali
 dan stok bisa terhitung lebih banyak dari yang sebenarnya.
-Urutan kunci SELALU sama (order -> produk urut id -> voucher), supaya dua transaksi tidak saling menunggu (deadlock).
+Urutan kunci selalu sama (order -> produk urut id -> voucher), supaya dua transaksi tidak saling menunggu (deadlock).
 Setelah commit, use case mengumumkan event (order.placed, order.paid, order.cancelled).
 Event tidak dikirim kalau transaksinya gagal, jadi tidak ada notifikasi untuk order yang batal tersimpan.
 
